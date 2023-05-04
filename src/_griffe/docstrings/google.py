@@ -197,10 +197,15 @@ def _read_parameters(
 
         description = "\n".join([description.lstrip(), *param_lines[1:]]).rstrip("\n")
 
+        default = None
         # use the type given after the parameter name, if any
         if " " in name_with_type:
             name, annotation = name_with_type.split(" ", 1)
             annotation = annotation.strip("()")
+
+            if "=" in annotation:
+                annotation, default = annotation.split("=", 1)
+
             if annotation.endswith(", optional"):
                 annotation = annotation[:-10]
             # try to compile the annotation to transform it into an expression
@@ -216,7 +221,7 @@ def _read_parameters(
         try:
             default = docstring.parent.parameters[name].default  # type: ignore[union-attr]
         except (AttributeError, KeyError):
-            default = None
+            pass
 
         if annotation is None:
             docstring_warning(docstring, line_number, f"No type or annotation for parameter '{name}'")
